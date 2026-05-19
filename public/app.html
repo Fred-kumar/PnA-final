@@ -976,6 +976,7 @@ async function callPeer(targetEmail, type = "voice") {
     playRing("out");
   } catch (err) {
     console.error("[Call]", err);
+    curPeer = null; callActive = false;
     toast("Microphone / camera access denied.", "err"); hangupClean();
   }
 }
@@ -1027,7 +1028,9 @@ async function acceptCall() {
     await pc.setLocalDescription(answer);
     socket.emit("call-answer", { targetEmail: incFrom, answer, sessionId: incSessionId });
   } catch (err) {
-    console.error("[Accept]", err); toast("Microphone / camera access denied.", "err"); hangupClean();
+    console.error("[Accept]", err);
+    curPeer = null; callActive = false;
+    toast("Microphone / camera access denied.", "err"); hangupClean();
   }
 }
 
