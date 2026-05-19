@@ -990,7 +990,7 @@ socket.on("call-answered", async ({ answer }) => {
 socket.on("ice-candidate", async ({ candidate }) => {
   if (pc && candidate) { try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch (_) {} }
 });
-socket.on("call-ended",    ({ reason } = {}) => { stopRing(); if (callActive) { toast(reason || "Call ended."); hangupClean(); } });
+socket.on("call-ended", ({ reason } = {}) => { stopRing(); toast(reason || "Call ended."); hangupClean(); });
 socket.on("call-cancelled",() => { stopRing(); toast("Caller cancelled the call."); hangupClean(); });
 socket.on("call-auto-ended",() => { stopRing(); toast("Missed call — no answer."); hangupClean(); });
 
