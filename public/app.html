@@ -950,7 +950,7 @@ function mkPC(target) {
   p.onconnectionstatechange = () => {
     const s = p.connectionState;
     if (s === "connected") { stopRing(); playConnectSound(); setCallStatus("Connected"); startTimer(); document.getElementById("call-timer").style.display = "block"; }
-    else if (["disconnected","failed","closed"].includes(s) && callActive) endCall();
+    else if (["disconnected","failed","closed"].includes(s)) { if (callActive) endCall(); else hangupClean(); }
   };
   return p;
 }
@@ -976,7 +976,7 @@ async function callPeer(targetEmail, type = "voice") {
     playRing("out");
   } catch (err) {
     console.error("[Call]", err);
-    curPeer = null; callActive = false;
+    curPeer = null; callActive = false; sessionId = null;
     toast("Microphone / camera access denied.", "err"); hangupClean();
   }
 }
@@ -991,7 +991,7 @@ socket.on("call-answered", async ({ answer }) => {
 socket.on("ice-candidate", async ({ candidate }) => {
   if (pc && candidate) { try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch (_) {} }
 });
-socket.on("call-ended", ({ reason } = {}) => { stopRing(); toast(reason || "Call ended."); hangupClean(); });
+socket.on("call-ended",    ({ reason } = {}) => { stopRing(); toast(reason || "Call ended."); hangupClean(); });
 socket.on("call-cancelled",() => { stopRing(); toast("Caller cancelled the call."); hangupClean(); });
 socket.on("call-auto-ended",() => { stopRing(); toast("Missed call — no answer."); hangupClean(); });
 
@@ -1028,8 +1028,7 @@ async function acceptCall() {
     await pc.setLocalDescription(answer);
     socket.emit("call-answer", { targetEmail: incFrom, answer, sessionId: incSessionId });
   } catch (err) {
-    console.error("[Accept]", err);
-    curPeer = null; callActive = false;
+    console.error("[Accept]", err); curPeer = null; callActive = false; sessionId = null;
     toast("Microphone / camera access denied.", "err"); hangupClean();
   }
 }
@@ -1074,8 +1073,9 @@ function endCall() {
 }
 
 function hangupClean() {
+  // Reset call state immediately — prevents "Already in a call" on retry
+  curPeer = null; callActive = false; sessionId = null;
   stopRing(); if (navigator.vibrate) navigator.vibrate(0);
-  callActive = false; curPeer = null; sessionId = null;
   if (pc) { try { pc.close(); } catch (_) {} pc = null; }
   if (localStream) { localStream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} }); localStream = null; }
   stopTimer();
@@ -1091,7 +1091,7 @@ function hangupClean() {
   document.getElementById("cc-cam").className = "cc cc-cam";
   document.getElementById("cc-spk").className = "cc cc-spk";
   curPeer = null; sessionId = null; isMuted = false; isCamOff = false; isSpeakerMuted = false;
-  incFrom = null; incOffer = null; incSessionId = null;
+  incFrom = null; incOffer = null; incSessionId = null; callActive = false;
   // Restore mute icon
   document.getElementById("cc-mute").innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
 }
