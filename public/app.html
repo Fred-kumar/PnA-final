@@ -1075,7 +1075,7 @@ function endCall() {
 
 function hangupClean() {
   stopRing(); if (navigator.vibrate) navigator.vibrate(0);
-  callActive = false;
+  callActive = false; curPeer = null; sessionId = null;
   if (pc) { try { pc.close(); } catch (_) {} pc = null; }
   if (localStream) { localStream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} }); localStream = null; }
   stopTimer();
