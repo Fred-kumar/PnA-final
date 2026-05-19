@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>P&A Connect</title>
+<style>
+:root[data-theme="dark"]  { --bg: #07101f; --text: #e8f0fe; --sub: #7a90b0; }
+:root[data-theme="light"] { --bg: #f0f4f8; --text: #0f172a; --sub: #64748b; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+       height: 100vh; display: grid; place-items: center; text-align: center; gap: 16px; }
+.ring { width: 44px; height: 44px; border: 3px solid rgba(41,121,255,.2);
+        border-top-color: #2979ff; border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+p { font-size: 14px; color: var(--sub); font-family: 'Inter', sans-serif; }
+</style>
+</head>
+<body>
+<div class="ring"></div>
+<p>Signing you in…</p>
+<script>
+const p   = new URLSearchParams(location.search);
+const t   = p.get("t");
+const uid = p.get("uid");
+const un  = p.get("un");
+const dn  = p.get("dn");
+const us  = p.get("us");
+const th  = localStorage.getItem("pna-theme") || "dark";
+document.documentElement.setAttribute("data-theme", th);
+if (t) {
+  localStorage.setItem("pna-token", t);
+  localStorage.setItem("pna-user", JSON.stringify({ uniqueId: uid, username: un||null,
+    displayName: dn||null, usernameSet: us === "1" }));
+  window.location.href = us === "1" ? "/app.html" : "/setup.html";
+} else {
+  window.location.href = "/?error=google";
+}
+</script>
+</body>
+</html>
