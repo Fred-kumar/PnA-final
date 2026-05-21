@@ -1,5 +1,5 @@
-const CACHE_NAME = "pna-v1";
-const PRECACHE   = ["/", "/app.html", "/logo.png"];
+const CACHE_NAME = "pna-v3";
+const PRECACHE   = ["/logo.png"];  // Do NOT cache app.html — always serve fresh
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(PRECACHE)));
